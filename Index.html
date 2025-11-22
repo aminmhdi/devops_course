@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pokemon Search App</title>
+    <style>
+      /* Add your CSS styling here */
+    </style>
+  </head>
+
+  <body>
+    <div id="search-container">
+      <label for="search">Search Pokemon:</label>
+      <input type="text" id="search" placeholder="Enter Pokemon Name" />
+    </div>
+
+    <div id="pagination">
+      <button id="previous" disabled>Previous</button>
+      <span id="page-info">Page 1 of 1</span>
+      <button id="next">Next</button>
+    </div>
+
+    <div id="pokemon-list">
+      <!-- Pokemon details will be dynamically added here -->
+    </div>
+
+    <script>
+      // Sample JSON data for Pokemon details
+      let pokemonData = generateRandomPokemonData();
+      let pokemonDataFiltered = generateRandomPokemonData();
+      const itemsPerPage = 10;
+      let currentPage = 1;
+
+      const searchInput = document.getElementById("search");
+      const pokemonListContainer = document.getElementById("pokemon-list");
+      const previousButton = document.getElementById("previous");
+      const nextButton = document.getElementById("next");
+      const pageInfo = document.getElementById("page-info");
+
+      // Function to display Pokemon based on current page
+      function displayPokemon() {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const displayedPokemon = pokemonDataFiltered.slice(
+          startIndex,
+          endIndex
+        );
+
+        pokemonListContainer.innerHTML = ""; // Clear previous content
+
+        displayedPokemon.forEach((pokemon) => {
+          const pokemonElement = document.createElement("div");
+          pokemonElement.innerHTML = `<span id="name">${pokemon.name}</span> - CP: ${pokemon.CP}, Attack: ${pokemon.attack}, Defense: ${pokemon.defense}, Type: ${pokemon.type}`;
+          pokemonListContainer.appendChild(pokemonElement);
+        });
+
+        pageInfo.textContent = `Page ${currentPage} of ${Math.ceil(
+          pokemonData.length / itemsPerPage
+        )}`;
+        previousButton.disabled = currentPage === 1;
+      }
+
+      // Event listener for the search bar
+      searchInput.addEventListener("input", function () {
+        const searchTerm = searchInput.value.toLowerCase();
+        pokemonDataFiltered = pokemonData.filter((pokemon) =>
+          pokemon.name.toLowerCase().includes(searchTerm)
+        );
+        currentPage = 1; // Reset page to 1 after search
+        displayPokemon();
+      });
+
+      // Event listener for the previous button
+      previousButton.addEventListener("click", function () {
+        if (currentPage > 1) {
+          currentPage--;
+          displayPokemon();
+        }
+      });
+
+      // Event listener for the next button
+      nextButton.addEventListener("click", function () {
+        const totalPages = Math.ceil(pokemonDataFiltered.length / itemsPerPage);
+        if (currentPage < totalPages) {
+          currentPage++;
+          displayPokemon();
+        }
+      });
+
+      function generateRandomPokemonData() {
+        let pokemonData = [];
+        for (let i = 1; i <= 200; i++) {
+          const randomCP = Math.floor(Math.random() * 1000) + 300;
+          const randomAttack = Math.floor(Math.random() * 100);
+          const randomDefense = Math.floor(Math.random() * 100);
+          const randomType = [
+            "Grass",
+            "Fire",
+            "Water",
+            "Electric",
+            "Ice",
+            "Psychic",
+          ][Math.floor(Math.random() * 6)];
+
+          const pokemon = {
+            name: `Pokemon${i}`,
+            image: `pokemon${i}.jpg`,
+            CP: randomCP,
+            attack: randomAttack,
+            defense: randomDefense,
+            type: randomType,
+          };
+
+          pokemonData.push(pokemon);
+        }
+
+        return pokemonData;
+      }
+
+      // Initial display
+      displayPokemon();
+    </script>
+  </body>
+</html>

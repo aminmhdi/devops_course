@@ -1,38 +1,35 @@
-pipeline{
+pipeline {
     agent any
-    tools{
-        maven 'maven_tool'
+
+    environment {
+        KUBECONFIG = '/var/lib/jenkins/.kube/config'
     }
-    stages{
-        stage('Checkout Code'){
-            steps{
-                git 'https://github.com/Sonal0409/DevOpsCodeDemo.git'
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'master', url: 'https://github.com/aminmhdi/wordpress-k8s'
             }
         }
-        stage('Compile the code'){
-            steps{
-                sh 'mvn compile'
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                sh 'kubectl apply -f mysql-pvc.yaml'
+                sh 'kubectl apply -f mysql-deployment.yaml'
+                sh 'kubectl apply -f mysql-service.yaml'
+                sh 'kubectl apply -f wordpress-pvc.yaml'
+                sh 'kubectl apply -f wordpress-deployment.yaml'
+                sh 'kubectl apply -f wordpress-service.yaml'
             }
         }
-        stage('Review the code'){
-            steps{
-                sh 'mvn pmd:pmd'
-            }
-            post{
-                success{
-                    recordIssues sourceCodeRetention: 'LAST_BUILD', tools: [pmdParser(pattern: '**/pmd.xml')]
-                }
-            }
+    }
+
+    post {
+        success {
+            echo 'WordPress successfully deployed!'
         }
-        stage('Run Unit Tests'){
-            steps{
-                sh 'mvn test'
-            }
-        }
-        stage('Package the code'){
-            steps{
-                sh 'mvn package'
-            }
+        failure {
+            echo 'Deployment failed!'
         }
     }
 }
